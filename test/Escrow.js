@@ -167,13 +167,17 @@ describe("Escrow", () => {
       await transaction.wait()
 
       await lender.sendTransaction({ to: escrow.address, value: tokens(5) })
+
+      transaction = await escrow.connect(seller).finalizeSale(1)
+      await transaction.wait()
     })
 
     it("Should finalized sale", async () => {
-      const transaction = await escrow.connect(seller).finalizeSale(1)
-      await transaction.wait()
-      // expect(await escrow.isListed(1)).to.equal(false)
-      // expect(await escrow.isSold(1)).to.equal(true)
+      expect(await escrow.getBalance()).to.equal(0)
+    })
+
+    it("Should updates the ownership to the buyer", async () => {
+      expect(await realEstate.ownerOf(1)).to.equal(buyer.address)
     })
   })
 })

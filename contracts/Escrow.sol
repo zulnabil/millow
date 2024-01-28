@@ -130,5 +130,14 @@ contract Escrow {
             address(this).balance >= purchasePrice[_nftID],
             "Not enough balance to finalize sale."
         );
+
+        (bool success, ) = payable(seller).call{value: address(this).balance}(
+            ""
+        );
+
+        require(success, "Failed to send Ether");
+
+        // Transfer NFT from this contract to the buyer
+        IERC721(nftAddress).transferFrom(address(this), buyer[_nftID], _nftID);
     }
 }
