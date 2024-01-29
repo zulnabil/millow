@@ -180,4 +180,44 @@ describe("Escrow", () => {
       expect(await realEstate.ownerOf(1)).to.equal(buyer.address)
     })
   })
+
+  describe("Cancel sale", () => {
+    beforeEach(async () => {
+      let transaction = await escrow
+        .connect(buyer)
+        .depositEarnest(1, { value: tokens(5) })
+      await transaction.wait()
+    })
+
+    it("Should refund to buyer if inspection is not approved", async () => {
+      const initialBuyerBalance = await buyer.getBalance()
+      const initialContractBalance = await escrow.getBalance()
+      let transaction = await escrow.connect(buyer).cancelSale(1)
+      await transaction.wait()
+
+      const finalBuyerBalance = await buyer.getBalance()
+      const finalContractBalance = await escrow.getBalance()
+
+      expect(finalBuyerBalance).to.greaterThan(initialBuyerBalance)
+      expect(finalContractBalance).to.lessThan(initialContractBalance)
+    })
+
+    it("Should refund to seller if inspection is approved", async () => {
+      let transaction = await escrow
+        .connect(inspector)
+        .updateInspectionStatus(1, true)
+      await transaction.wait()
+
+      const initialSellerBalance = await seller.getBalance()
+      const initialContractBalance = await escrow.getBalance()
+      transaction = await escrow.connect(buyer).cancelSale(1)
+      await transaction.wait()
+
+      const finalSellerBalance = await seller.getBalance()
+      const finalContractBalance = await escrow.getBalance()
+
+      expect(finalSellerBalance).to.greaterThan(initialSellerBalance)
+      expect(finalContractBalance).to.lessThan(initialContractBalance)
+    })
+  })
 })

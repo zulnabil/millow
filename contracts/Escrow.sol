@@ -131,6 +131,8 @@ contract Escrow {
             "Not enough balance to finalize sale."
         );
 
+        isListed[_nftID] = false;
+
         (bool success, ) = payable(seller).call{value: address(this).balance}(
             ""
         );
@@ -139,5 +141,14 @@ contract Escrow {
 
         // Transfer NFT from this contract to the buyer
         IERC721(nftAddress).transferFrom(address(this), buyer[_nftID], _nftID);
+    }
+
+    function cancelSale(uint256 _nftID) public {
+        // if inspection is not approved, then refund, otherwise send to seller
+        if (!inspectionPassed[_nftID]) {
+            payable(buyer[_nftID]).transfer(address(this).balance);
+        } else {
+            payable(seller).transfer(address(this).balance);
+        }
     }
 }
