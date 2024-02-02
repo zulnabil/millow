@@ -1,5 +1,5 @@
 const { expect } = require("chai")
-const { ethers } = require("hardhat")
+const { ethers, network } = require("hardhat")
 
 const tokens = (n) => {
   return ethers.utils.parseUnits(n.toString(), "ether")
@@ -10,6 +10,8 @@ describe("Escrow", () => {
   let buyer, seller, inspector, lender
 
   beforeEach(async () => {
+    await network.provider.send("hardhat_reset")
+
     // Deploy RealEstate
     ;[buyer, seller, inspector, lender] = await ethers.getSigners()
     const RealEstate = await ethers.getContractFactory("RealEstate")
@@ -72,6 +74,10 @@ describe("Escrow", () => {
 
     it("Should return lender address", async () => {
       expect(await escrow.lender()).to.equal(lender.address)
+    })
+
+    it("Should return total supply", async () => {
+      expect(await realEstate.totalSupply()).to.equal(1)
     })
   })
 

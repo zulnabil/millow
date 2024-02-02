@@ -7,6 +7,7 @@
 const hre = require("hardhat")
 
 async function main() {
+  // await hre.network.provider.send("hardhat_reset")
   // Set up accounts
   const [buyer, seller, inspector, lender] = await hre.ethers.getSigners()
 
@@ -14,11 +15,9 @@ async function main() {
   const RealEstate = await hre.ethers.getContractFactory("RealEstate")
   const realEstate = await RealEstate.deploy()
   await realEstate.deployed()
+  console.log("Real Estate deployed to:", realEstate.address)
 
-  console.log("RealEstate deployed to:", realEstate.address)
-  console.log("Minting 3 properties...\n")
-
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 0; i < 3; i++) {
     // Mint
     let transaction = await realEstate
       .connect(seller)
@@ -27,8 +26,8 @@ async function main() {
           i + 1
         }.json`
       )
+    console.log("Minted property #" + (i + 1))
     await transaction.wait()
-    console.log("Minted property #" + i)
   }
 
   // Deploy Escrow
@@ -40,6 +39,8 @@ async function main() {
     lender.address
   )
   await escrow.deployed()
+
+  console.log("\nEscrow deployed to:", escrow.address)
 
   for (let i = 1; i <= 3; i++) {
     // Approve property
@@ -79,6 +80,6 @@ main().catch((error) => {
   process.exitCode = 1
 })
 
-const tokens = (n) => {
+export const tokens = (n) => {
   return hre.ethers.utils.parseUnits(n.toString(), "ether")
 }

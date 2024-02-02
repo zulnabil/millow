@@ -9,6 +9,8 @@ contract RealEstate is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
+    mapping(uint256 => string) public tokenURIs;
+
     constructor() ERC721("Real Estate", "REAL") {}
 
     function mint(string memory tokenURI) public returns (uint256) {
@@ -17,7 +19,20 @@ contract RealEstate is ERC721URIStorage {
         uint256 newItemId = _tokenIds.current();
         _safeMint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
+        tokenURIs[newItemId] = tokenURI;
 
         return newItemId;
+    }
+
+    function burn(uint256 tokenId) public {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "RealEstate: caller is not owner nor approved"
+        );
+        _burn(tokenId);
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _tokenIds.current();
     }
 }
